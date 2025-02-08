@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Feliz Cumpleaños!</title>
+    <style>
+        body {
+            text-align: center;
+            background: linear-gradient(to right, #ffefba, #ffffff);
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .container {
+            margin-top: 50px;
+            animation: fadeIn 2s ease-in-out;
+        }
+        h1 {
+            font-size: 3em;
+            color: #d63384;
+            animation: bounce 1.5s infinite;
+        }
+        .image-container {
+            margin-top: 20px;
+        }
+        img {
+            width: 250px;
+            border-radius: 50%;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .message {
+            font-size: 1.5em;
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 3s ease-in-out 1s forwards;
+        }
+        button {
+            background-color: #d63384;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #b0256c;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: pink;
+            opacity: 0.7;
+            animation: fall 3s linear infinite;
+        }
+        @keyframes fall {
+            from { transform: translateY(-100vh); }
+            to { transform: translateY(100vh); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¡Feliz Cumpleaños, Hermana!</h1>
+        <div class="image-container">
+            <img src="tu_imagen.jpg" alt="Imagen de cumpleaños">
+        </div>
+        <p class="message" id="mensaje">Hola Carito, en este día tan especial quiero recordarte lo increíble que eres. 
+        Eres una persona llena de luz, alegría y amor, y no hay palabras suficientes para expresar lo agradecido que estoy por tenerte en mi vida. 
+        Hoy celebramos no solo un año más de tu existencia, sino también todos los momentos hermosos que has compartido con nosotros. 
+        Que este nuevo año te traiga felicidad, éxito y muchas bendiciones. ¡Disfruta tu día al máximo! Te quiero con todo mi corazón.</p>
+        <button onclick="playMusic()">🎶 Reproducir Música 🎶</button>
+    </div>
+    <audio id="audio" loop>
+        <source src="cumpleaños.mp3" type="audio/mpeg">
+        Tu navegador no soporta audio HTML5.
+    </audio>
+    <script>
+        function playMusic() {
+            document.getElementById('audio').play();
+        }
+        for (let i = 0; i < 50; i++) {
+            let confetti = document.createElement("div");
+            confetti.className = "confetti";
+            confetti.style.left = Math.random() * 100 + "vw";
+            confetti.style.animationDuration = (Math.random() * 3 + 2) + "s";
+            document.body.appendChild(confetti);
+        }
+    </script>
+</body>
+</html>
