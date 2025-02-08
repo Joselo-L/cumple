@@ -1,0 +1,47 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+}
+
+/* Tarjeta de cumpleaños */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+}
+
+/* Imagen de perfil */
+.profile-pic {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* Mensaje */
+p {
+    font-size: 18px;
+    color: #333;
+}
+
+/* Audio */
+audio {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Pie de página */
+.footer {
+    margin-top: 15px;
+    font-style: italic;
+    color: #555;
+}
