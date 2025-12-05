@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEVEL FIT GYM - App</title>
+    <!-- Tailwind CSS (Usado para el diseño) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js (Usado para el gráfico de progreso de peso) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Fuente Inter (Usada para la tipografía moderna) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 300px;
+            margin: 0 auto;
+        }
+        /* Oculta la barra de desplazamiento para una apariencia más limpia en el móvil */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .nav-item.active { color: #2563EB; }
+        .nav-item.active svg { stroke: #2563EB; }
+        /* Animación para la transición de pantallas */
+        .section-view { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .section-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-20">
+
+    <!-- PANTALLA DE INICIO DE SESIÓN -->
+    <div id="screen-login" class="section-view active min-h-screen flex flex-col justify-center items-center p-6 bg-white">
+        <div class="w-full max-w-sm text-center">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-1 tracking-tighter">LEVEL <span class="text-orange-500">FIT</span></h1>
+            <h2 class="text-2xl font-bold text-slate-800 mb-8">GYM</h2>
+            
+            <div class="bg-slate-50 p-6 rounded-2xl shadow-sm border border-slate-100">
+                <p class="text-slate-600 mb-6 font-medium">Accede a tu entrenamiento</p>
+                <input type="text" id="login-input" placeholder="Número de documento o correo" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all">
+                <button onclick="app.login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transform active:scale-95 transition-all">
+                    Entrar
+                </button>
+                <div class="mt-6 text-sm text-blue-600 font-medium cursor-pointer hover:underline">
+                    ¿Primera vez? Registrarme
+                </div>
+            </div>
+            <p class="mt-8 text-xs text-slate-400">v1.0.0 - Demo</p>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DE LA APP (Se muestra después del login) -->
+    <div id="app-container" class="hidden max-w-md mx-auto min-h-screen relative bg-slate-50 shadow-2xl overflow-hidden">
+        
+        <!-- ENCABEZADO -->
+        <header class="bg-white px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-10">
+            <div>
+                <h1 class="text-xl font-extrabold text-blue-600 tracking-tighter">LEVEL <span class="text-orange-500">FIT</span></h1>
+            </div>
+            <!-- Icono de Perfil -->
+            <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-xs cursor-pointer" onclick="app.nav('screen-profile')">
+                JP
+            </div>
+        </header>
+
+        <!-- PANTALLA DE INICIO (DASHBOARD) -->
+        <div id="screen-dashboard" class="section-view p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Hola, Juan 👋</h2>
+                <p class="text-blue-600 font-medium">¡Hoy es un buen día para entrenar!</p>
+                <p class="text-sm text-slate-500 mt-2">Aquí tienes un resumen rápido de tu estado y accesos directos a tus herramientas de entrenamiento.</p>
+            </div>
+
+            <!-- Tarjetas de Estado -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Membresía</p>
+                    <p class="text-2xl font-bold text-slate-800">7 <span class="text-sm font-normal text-slate-500">días</span></p>
+                    <p class="text-xs text-green-600 font-medium">Activa</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-purple-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Peso Actual</p>
+                    <p class="text-2xl font-bold text-slate-800">73.5 <span class="text-sm font-normal text-slate-500">kg</span></p>
+                    <p class="text-xs text-purple-600 font-medium">-1.5 kg este mes</p>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <h3 class="font-bold text-slate-800 mb-3">Acceso Rápido</h3>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="app.nav('screen-routine')" class="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors text-blue-700">
+                    <span class="text-2xl mb-1">🏋️</span>
+                    <span class="font-bold text-sm">Mi Rutina</span>
+                </button>
+                <button onclick="app.nav('screen-progress')" class="flex flex-col items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors text-green-700">
+                    <span class="text-2xl mb-1">📈</span>
+                    <span class="font-bold text-sm">Progreso</span>
+                </button>
+            </div>
+
+            <!-- Banner de Promoción -->
+            <div onclick="app.nav('screen-promos')" class="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-2xl shadow-lg text-white mb-6 cursor-pointer">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-lg">¡Promo 2x1!</p>
+                        <p class="text-xs opacity-90">Solo por este mes de Diciembre</p>
+                    </div>
+                    <span class="text-2xl">🔥</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE RUTINA -->
+        <div id="screen-routine" class="section-view p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Rutina del Día</h2>
+                <p class="text-sm text-slate-500 mt-2">Sigue tu plan de entrenamiento diario diseñado por tus entrenadores. Recuerda descansar entre series.</p>
+            </div>
+
+            <!-- Lista de Ejercicios -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
+                <div class="bg-blue-600 p-4 text-white">
+                    <h3 class="font-bold text-lg">Lunes: Pecho y Tríceps</h3>
+                    <p class="text-xs opacity-80">Enfoque: Hipertrofia</p>
+                </div>
+                <div class="p-4 space-y-4">
+                    <!-- Ejercicio 1 -->
+                    <div class="flex items-start pb-4 border-b border-slate-100 last:border-0">
+                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">1</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-800">Press de Banca Plano</h4>
+                            <p class="text-sm text-slate-500">4 Series x 10-12 Repeticiones</p>
+                            <div class="mt-2 flex gap-2">
+                                <span class="px-2 py-1 bg-slate-100 text-xs rounded text-slate-600">Barra Olímpica</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Ejercicio 2 -->
+                    <div class="flex items-start pb-4 border-b border-slate-100 last:border-0">
+                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">2</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-800">Aperturas con Mancuernas</h4>
+                            <p class="text-sm text-slate-500">3 Series x 12-15 Repeticiones</p>
+                        </div>
+                    </div>
+                    <!-- Ejercicio 3 -->
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">3</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-800">Extensión de Tríceps en Polea</h4>
+                            <p class="text-sm text-slate-500">4 Series x 15 Repeticiones</p>
+                            <p class="text-xs text-orange-500 mt-1 font-medium">💡 Tip: Mantén los codos pegados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="w-full py-3 bg-slate-200 text-slate-600 rounded-xl font-semibold text-sm hover:bg-slate-300 transition-colors">Ver Semana Completa</button>
+        </div>
+
+        <!-- PANTALLA DE PROGRESO -->
+        <div id="screen-progress" class="section-view p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Mi Progreso</h2>
+                <p class="text-sm text-slate-500 mt-2">Visualiza tu evolución física. Los gráficos te ayudan a mantener la motivación y ajustar tus objetivos.</p>
+            </div>
+
+            <!-- Tarjeta del Gráfico -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                <h3 class="font-bold text-slate-800 mb-4">Evolución de Peso</h3>
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Métrica de Últimas Medidas -->
+            <h3 class="font-bold text-slate-800 mb-3">Últimas Medidas</h3>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-white p-3 rounded-xl shadow-sm">
+                    <p class="text-xs text-slate-500">Cintura</p>
+                    <p class="font-bold text-lg">83 <span class="text-xs font-normal">cm</span></p>
+                    <span class="text-xs text-green-500 font-bold">↓ 1cm</span>
+                </div>
+                <div class="bg-white p-3 rounded-xl shadow-sm">
+                    <p class="text-xs text-slate-500">Brazo</p>
+                    <p class="font-bold text-lg">36 <span class="text-xs font-normal">cm</span></p>
+                    <span class="text-xs text-green-500 font-bold">↑ 0.5cm</span>
+                </div>
+                <div class="bg-white p-3 rounded-xl shadow-sm">
+                    <p class="text-xs text-slate-500">IMC</p>
+                    <p class="font-bold text-lg">24.0</p>
+                    <span class="text-xs text-blue-500 font-bold">Normal</span>
+                </div>
+                <div class="bg-white p-3 rounded-xl shadow-sm">
+                    <p class="text-xs text-slate-500">Glúteo</p>
+                    <p class="font-bold text-lg">98 <span class="text-xs font-normal">cm</span></p>
+                </div>
+            </div>
+
+            <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                <span>+</span> Agregar Nuevo Registro
+            </button>
+        </div>
+
+        <!-- PANTALLA DE MEMBRESÍA -->
+        <div id="screen-membership" class="section-view p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Membresía</h2>
+                <p class="text-sm text-slate-500 mt-2">Revisa el estado de tu suscripción y renueva fácilmente para no perder ni un día de entrenamiento.</p>
+            </div>
+
+            <!-- Tarjeta de Estado de Membresía -->
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-6 relative">
+                <div class="h-2 bg-green-500 w-full absolute top-0"></div>
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                        <!-- Icono de Checkmark -->
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Plan Mensual PRO</h3>
+                    <p class="text-slate-500 mb-4">Acceso Total + Entrenador</p>
+                    
+                    <div class="border-t border-slate-100 pt-4 text-left space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">Inicio:</span>
+                            <span class="font-medium">01 Nov 2025</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">Vencimiento:</span>
+                            <span class="font-bold text-slate-800">01 Dic 2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de Renovación por WhatsApp (usando un enlace real) -->
+            <a href="https://wa.me/573001234567?text=Hola,%20quiero%20renovar%20mi%20membresía" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg text-center mb-4 flex items-center justify-center gap-2">
+                <!-- Icono de WhatsApp -->
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                Renovar por WhatsApp
+            </a>
+        </div>
+
+        <!-- PANTALLA DE PROMOCIONES -->
+        <div id="screen-promos" class="section-view p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">Promociones</h2>
+                <p class="text-sm text-slate-500 mt-2">Beneficios exclusivos para miembros de Level Fit Gym. ¡Aprovéchalos!</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-orange-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">¡Promo 2x1!</h3>
+                            <p class="text-sm text-slate-600 mt-1">Trae a un amigo y paguen mitad de precio el primer mes.</p>
+                        </div>
+                        <span class="text-2xl">⚡</span>
+                    </div>
+                    <div class="mt-3 text-xs font-bold text-orange-500 uppercase">Válido hasta 31 Dic</div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Día de Prueba Gratis</h3>
+                            <p class="text-sm text-slate-600 mt-1">Todos los miércoles puedes traer a un invitado totalmente gratis.</p>
+                        </div>
+                        <span class="text-2xl">🎟️</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE PERFIL -->
+        <div id="screen-profile" class="section-view p-6">
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-2xl mx-auto mb-4">
+                    JP
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Juan Pérez</h2>
+                <p class="text-blue-600">Miembro Activo</p>
+            </div>
+
+            <!-- Datos Personales -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
+                <div class="p-4 border-b border-slate-100 flex justify-between">
+                    <span class="text-slate-500">Edad</span>
+                    <span class="font-medium text-slate-800">28 años</span>
+                </div>
+                <div class="p-4 border-b border-slate-100 flex justify-between">
+                    <span class="text-slate-500">Peso Inicial</span>
+                    <span class="font-medium text-slate-800">75 kg</span>
+                </div>
+                <div class="p-4 border-b border-slate-100 flex justify-between">
+                    <span class="text-slate-500">Teléfono</span>
+                    <span class="font-medium text-slate-800">300 123 4567</span>
+                </div>
+                <div class="p-4 flex justify-between">
+                    <span class="text-slate-500">Correo</span>
+                    <span class="font-medium text-slate-800 text-sm">juan.perez@email.com</span>
+                </div>
+            </div>
+
+            <button onclick="app.logout()" class="w-full text-red-500 font-medium py-3 rounded-xl border border-red-100 hover:bg-red-50">
+                Cerrar Sesión
+            </button>
+        </div>
+
+        <!-- BARRA DE NAVEGACIÓN INFERIOR (Fixed Bottom Nav) -->
+        <nav class="absolute bottom-0 w-full bg-white border-t border-slate-100 flex justify-around items-center py-3 pb-6 z-20">
+            <!-- Icono de Inicio -->
+            <div class="nav-item active flex flex-col items-center cursor-pointer text-slate-400" onclick="app.nav('screen-dashboard')">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-[10px] font-bold">Inicio</span>
+            </div>
+            <!-- Icono de Rutina -->
+            <div class="nav-item flex flex-col items-center cursor-pointer text-slate-400" onclick="app.nav('screen-routine')">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span class="text-[10px] font-bold">Rutina</span>
+            </div>
+            <!-- Icono de Progreso -->
+            <div class="nav-item flex flex-col items-center cursor-pointer text-slate-400" onclick="app.nav('screen-progress')">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <span class="text-[10px] font-bold">Progreso</span>
+            </div>
+            <!-- Icono de Membresía -->
+            <div class="nav-item flex flex-col items-center cursor-pointer text-slate-400" onclick="app.nav('screen-membership')">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="text-[10px] font-bold">Membresía</span>
+            </div>
+        </nav>
+
+    </div>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        const app = {
+            state: {
+                isLoggedIn: false,
+                currentScreen: 'screen-login'
+            },
+            
+            init: function() {
+                // Inicializa el gráfico al cargar la aplicación (o simular el login)
+                this.renderCharts();
+            },
+
+            login: function() {
+                const input = document.getElementById('login-input').value;
+                if(input.trim() === '') {
+                    // Notificación visual de error (sustituto de alert())
+                    document.getElementById('login-input').classList.add('border-red-500', 'ring-red-500');
+                    setTimeout(() => {
+                        document.getElementById('login-input').classList.remove('border-red-500', 'ring-red-500');
+                    }, 1000);
+                    return;
+                }
+                
+                // Simulación de Login: Oculta la pantalla de login y muestra la app principal
+                document.getElementById('screen-login').style.display = 'none';
+                document.getElementById('app-container').classList.remove('hidden');
+                this.state.isLoggedIn = true;
+                this.nav('screen-dashboard');
+            },
+
+            logout: function() {
+                // Simulación de Logout: Oculta la app y muestra la pantalla de login
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('screen-login').style.display = 'flex';
+                document.getElementById('login-input').value = '';
+                this.state.isLoggedIn = false;
+            },
+
+            nav: function(screenId) {
+                // Oculta todas las secciones de la aplicación
+                document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+                
+                // Muestra la sección de destino
+                document.getElementById(screenId).classList.add('active');
+                
+                // Actualiza el estado visual de la barra de navegación
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => item.classList.remove('active'));
+
+                // Resalta el icono de navegación basado en la pantalla actual
+                if(screenId === 'screen-dashboard') navItems[0].classList.add('active');
+                if(screenId === 'screen-routine') navItems[1].classList.add('active');
+                if(screenId === 'screen-progress') navItems[2].classList.add('active');
+                if(screenId === 'screen-membership') navItems[3].classList.add('active');
+
+                // Si se navega a progreso, asegura que el gráfico se renderice correctamente
+                if(screenId === 'screen-progress') {
+                    // Se puede agregar lógica aquí si el gráfico necesitara redibujarse, aunque Chart.js lo maneja bien.
+                }
+            },
+
+            renderCharts: function() {
+                // Configuración y creación del gráfico de línea de peso usando Chart.js
+                const ctx = document.getElementById('weightChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1 Nov', '8 Nov', '15 Nov', '22 Nov', '1 Dic'],
+                        datasets: [{
+                            label: 'Peso (kg)',
+                            data: [75.0, 74.8, 74.2, 73.9, 73.5],
+                            borderColor: '#2563EB', // Azul
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#F97316', // Naranja
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            fill: true,
+                            tension: 0.4 // Curvas suaves
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }, // Oculta la leyenda
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                padding: 10,
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: { color: '#F1F5F9' },
+                                ticks: { font: { family: 'Inter' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter' } }
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        // Inicia la aplicación al cargar la página
+        app.init();
+    </script>
+</body>
+</html>
