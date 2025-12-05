@@ -33,26 +33,24 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-20">
 
     <!-- PANTALLA DE INICIO DE SESIÓN -->
+    <!-- NOTA: El login ahora solo inicializa la UI, la autenticación real ocurre en el script. -->
     <div id="screen-login" class="section-view active min-h-screen flex flex-col justify-center items-center p-6 bg-white">
         <div class="w-full max-w-sm text-center">
             <h1 class="text-4xl font-extrabold text-blue-600 mb-1 tracking-tighter">LEVEL <span class="text-orange-500">FIT</span></h1>
             <h2 class="text-2xl font-bold text-slate-800 mb-8">GYM</h2>
             
-            <div class="bg-slate-50 p-6 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-slate-600 mb-6 font-medium">Accede a tu entrenamiento</p>
-                <input type="text" id="login-input" placeholder="Número de documento o correo" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all">
-                <button onclick="app.login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transform active:scale-95 transition-all">
-                    Entrar
+            <div id="login-form-container" class="bg-slate-50 p-6 rounded-2xl shadow-sm border border-slate-100">
+                <p class="text-slate-600 mb-6 font-medium" id="login-status">Cargando aplicación y perfil de usuario...</p>
+                <!-- El botón de login se mostrará al inicializar la UI -->
+                <button id="login-button" onclick="app.login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transform active:scale-95 transition-all hidden">
+                    Entrar (Demo)
                 </button>
-                <div class="mt-6 text-sm text-blue-600 font-medium cursor-pointer hover:underline">
-                    ¿Primera vez? Registrarme
-                </div>
             </div>
-            <p class="mt-8 text-xs text-slate-400">v1.0.0 - Demo</p>
+            <p class="mt-8 text-xs text-slate-400">v1.0.1 - Con persistencia de datos</p>
         </div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL DE LA APP (Se muestra después del login) -->
+    <!-- CONTENEDOR PRINCIPAL DE LA APP (Hidden hasta que se inicia la sesión) -->
     <div id="app-container" class="hidden max-w-md mx-auto min-h-screen relative bg-slate-50 shadow-2xl overflow-hidden">
         
         <!-- ENCABEZADO -->
@@ -61,15 +59,15 @@
                 <h1 class="text-xl font-extrabold text-blue-600 tracking-tighter">LEVEL <span class="text-orange-500">FIT</span></h1>
             </div>
             <!-- Icono de Perfil -->
-            <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-xs cursor-pointer" onclick="app.nav('screen-profile')">
-                JP
+            <div id="profile-initials" class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-xs cursor-pointer" onclick="app.nav('screen-profile')">
+                -
             </div>
         </header>
 
         <!-- PANTALLA DE INICIO (DASHBOARD) -->
         <div id="screen-dashboard" class="section-view p-6">
             <div class="mb-6">
-                <h2 class="text-2xl font-bold text-slate-900">Hola, Juan 👋</h2>
+                <h2 class="text-2xl font-bold text-slate-900">Hola, <span id="dashboard-user-name">Usuario</span> 👋</h2>
                 <p class="text-blue-600 font-medium">¡Hoy es un buen día para entrenar!</p>
                 <p class="text-sm text-slate-500 mt-2">Aquí tienes un resumen rápido de tu estado y accesos directos a tus herramientas de entrenamiento.</p>
             </div>
@@ -78,13 +76,13 @@
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Membresía</p>
-                    <p class="text-2xl font-bold text-slate-800">7 <span class="text-sm font-normal text-slate-500">días</span></p>
-                    <p class="text-xs text-green-600 font-medium">Activa</p>
+                    <p class="text-2xl font-bold text-slate-800" id="membership-days">- <span class="text-sm font-normal text-slate-500">días</span></p>
+                    <p class="text-xs text-green-600 font-medium" id="membership-status">Cargando...</p>
                 </div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-purple-500">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Peso Actual</p>
-                    <p class="text-2xl font-bold text-slate-800">73.5 <span class="text-sm font-normal text-slate-500">kg</span></p>
-                    <p class="text-xs text-purple-600 font-medium">-1.5 kg este mes</p>
+                    <p class="text-2xl font-bold text-slate-800" id="current-weight">- <span class="text-sm font-normal text-slate-500">kg</span></p>
+                    <p class="text-xs text-purple-600 font-medium" id="weight-trend">--</p>
                 </div>
             </div>
 
@@ -101,7 +99,7 @@
                 </button>
             </div>
 
-            <!-- Banner de Promoción -->
+            <!-- Promo Banner -->
             <div onclick="app.nav('screen-promos')" class="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-2xl shadow-lg text-white mb-6 cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>
@@ -120,42 +118,9 @@
                 <p class="text-sm text-slate-500 mt-2">Sigue tu plan de entrenamiento diario diseñado por tus entrenadores. Recuerda descansar entre series.</p>
             </div>
 
-            <!-- Lista de Ejercicios -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
-                <div class="bg-blue-600 p-4 text-white">
-                    <h3 class="font-bold text-lg">Lunes: Pecho y Tríceps</h3>
-                    <p class="text-xs opacity-80">Enfoque: Hipertrofia</p>
-                </div>
-                <div class="p-4 space-y-4">
-                    <!-- Ejercicio 1 -->
-                    <div class="flex items-start pb-4 border-b border-slate-100 last:border-0">
-                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">1</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-slate-800">Press de Banca Plano</h4>
-                            <p class="text-sm text-slate-500">4 Series x 10-12 Repeticiones</p>
-                            <div class="mt-2 flex gap-2">
-                                <span class="px-2 py-1 bg-slate-100 text-xs rounded text-slate-600">Barra Olímpica</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Ejercicio 2 -->
-                    <div class="flex items-start pb-4 border-b border-slate-100 last:border-0">
-                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">2</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-slate-800">Aperturas con Mancuernas</h4>
-                            <p class="text-sm text-slate-500">3 Series x 12-15 Repeticiones</p>
-                        </div>
-                    </div>
-                    <!-- Ejercicio 3 -->
-                    <div class="flex items-start">
-                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">3</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-slate-800">Extensión de Tríceps en Polea</h4>
-                            <p class="text-sm text-slate-500">4 Series x 15 Repeticiones</p>
-                            <p class="text-xs text-orange-500 mt-1 font-medium">💡 Tip: Mantén los codos pegados</p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Contenido de la rutina cargado por JS -->
+            <div id="routine-content" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
+                 <div class="p-4 text-center text-slate-500">Cargando rutina...</div>
             </div>
 
             <button class="w-full py-3 bg-slate-200 text-slate-600 rounded-xl font-semibold text-sm hover:bg-slate-300 transition-colors">Ver Semana Completa</button>
@@ -176,33 +141,16 @@
                 </div>
             </div>
 
-            <!-- Métrica de Últimas Medidas -->
-            <h3 class="font-bold text-slate-800 mb-3">Últimas Medidas</h3>
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-white p-3 rounded-xl shadow-sm">
-                    <p class="text-xs text-slate-500">Cintura</p>
-                    <p class="font-bold text-lg">83 <span class="text-xs font-normal">cm</span></p>
-                    <span class="text-xs text-green-500 font-bold">↓ 1cm</span>
-                </div>
-                <div class="bg-white p-3 rounded-xl shadow-sm">
-                    <p class="text-xs text-slate-500">Brazo</p>
-                    <p class="font-bold text-lg">36 <span class="text-xs font-normal">cm</span></p>
-                    <span class="text-xs text-green-500 font-bold">↑ 0.5cm</span>
-                </div>
-                <div class="bg-white p-3 rounded-xl shadow-sm">
-                    <p class="text-xs text-slate-500">IMC</p>
-                    <p class="font-bold text-lg">24.0</p>
-                    <span class="text-xs text-blue-500 font-bold">Normal</span>
-                </div>
-                <div class="bg-white p-3 rounded-xl shadow-sm">
-                    <p class="text-xs text-slate-500">Glúteo</p>
-                    <p class="font-bold text-lg">98 <span class="text-xs font-normal">cm</span></p>
-                </div>
+            <!-- Botón para Agregar Nuevo Registro (Funcionalidad Firestore) -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                <h3 class="font-bold text-slate-800 mb-3">Registrar Nuevo Peso</h3>
+                <input type="number" step="0.1" id="new-weight-input" placeholder="Ej: 73.2" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4 transition-all">
+                <button onclick="app.addProgressEntry()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                    Guardar Peso de Hoy
+                </button>
             </div>
-
-            <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
-                <span>+</span> Agregar Nuevo Registro
-            </button>
+            
+            <p id="progress-message" class="text-sm text-center text-slate-500 mt-2"></p>
         </div>
 
         <!-- PANTALLA DE MEMBRESÍA -->
@@ -212,33 +160,27 @@
                 <p class="text-sm text-slate-500 mt-2">Revisa el estado de tu suscripción y renueva fácilmente para no perder ni un día de entrenamiento.</p>
             </div>
 
-            <!-- Tarjeta de Estado de Membresía -->
+            <!-- Tarjeta de Estado de Membresía (Datos cargados por JS) -->
             <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-6 relative">
-                <div class="h-2 bg-green-500 w-full absolute top-0"></div>
+                <div id="membership-bar" class="h-2 bg-slate-200 w-full absolute top-0"></div>
                 <div class="p-6 text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
-                        <!-- Icono de Checkmark -->
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div id="membership-icon" class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800">Plan Mensual PRO</h3>
-                    <p class="text-slate-500 mb-4">Acceso Total + Entrenador</p>
+                    <h3 class="text-xl font-bold text-slate-800" id="membership-plan">Plan: No Definido</h3>
+                    <p class="text-slate-500 mb-4" id="membership-access">--</p>
                     
                     <div class="border-t border-slate-100 pt-4 text-left space-y-2">
                         <div class="flex justify-between text-sm">
-                            <span class="text-slate-500">Inicio:</span>
-                            <span class="font-medium">01 Nov 2025</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Vencimiento:</span>
-                            <span class="font-bold text-slate-800">01 Dic 2025</span>
+                            <span class="font-bold text-slate-800" id="membership-expiry">Cargando...</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Botón de Renovación por WhatsApp (usando un enlace real) -->
+            <!-- Botón de Renovación por WhatsApp -->
             <a href="https://wa.me/573001234567?text=Hola,%20quiero%20renovar%20mi%20membresía" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg text-center mb-4 flex items-center justify-center gap-2">
-                <!-- Icono de WhatsApp -->
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                 Renovar por WhatsApp
             </a>
@@ -278,30 +220,30 @@
         <!-- PANTALLA DE PERFIL -->
         <div id="screen-profile" class="section-view p-6">
             <div class="text-center mb-8">
-                <div class="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-2xl mx-auto mb-4">
-                    JP
+                <div id="profile-picture" class="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-2xl mx-auto mb-4">
+                    -
                 </div>
-                <h2 class="text-2xl font-bold text-slate-900">Juan Pérez</h2>
-                <p class="text-blue-600">Miembro Activo</p>
+                <h2 class="text-2xl font-bold text-slate-900" id="profile-name">Cargando Nombre</h2>
+                <p class="text-blue-600" id="profile-membership-status">Cargando Estado</p>
+                <p class="text-xs text-slate-400 mt-2 break-all">ID de Usuario: <span id="user-id-display">Cargando...</span></p>
             </div>
 
-            <!-- Datos Personales -->
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
                 <div class="p-4 border-b border-slate-100 flex justify-between">
                     <span class="text-slate-500">Edad</span>
-                    <span class="font-medium text-slate-800">28 años</span>
+                    <span class="font-medium text-slate-800" id="profile-age">--</span>
                 </div>
                 <div class="p-4 border-b border-slate-100 flex justify-between">
                     <span class="text-slate-500">Peso Inicial</span>
-                    <span class="font-medium text-slate-800">75 kg</span>
+                    <span class="font-medium text-slate-800" id="profile-initial-weight">--</span>
                 </div>
                 <div class="p-4 border-b border-slate-100 flex justify-between">
                     <span class="text-slate-500">Teléfono</span>
-                    <span class="font-medium text-slate-800">300 123 4567</span>
+                    <span class="font-medium text-slate-800" id="profile-phone">--</span>
                 </div>
                 <div class="p-4 flex justify-between">
                     <span class="text-slate-500">Correo</span>
-                    <span class="font-medium text-slate-800 text-sm">juan.perez@email.com</span>
+                    <span class="font-medium text-slate-800 text-sm" id="profile-email">--</span>
                 </div>
             </div>
 
@@ -336,117 +278,378 @@
 
     </div>
 
-    <!-- LÓGICA JAVASCRIPT -->
-    <script>
-        const app = {
-            state: {
-                isLoggedIn: false,
-                currentScreen: 'screen-login'
-            },
-            
-            init: function() {
-                // Inicializa el gráfico al cargar la aplicación (o simular el login)
-                this.renderCharts();
-            },
+    <!-- FIREBASE AND APP LOGIC -->
+    <script type="module">
+        // Importaciones de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, addDoc, getDocs, getDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Variables globales (proporcionadas por el entorno)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'level-fit-gym-demo';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-            login: function() {
-                const input = document.getElementById('login-input').value;
-                if(input.trim() === '') {
-                    // Notificación visual de error (sustituto de alert())
-                    document.getElementById('login-input').classList.add('border-red-500', 'ring-red-500');
-                    setTimeout(() => {
-                        document.getElementById('login-input').classList.remove('border-red-500', 'ring-red-500');
-                    }, 1000);
+        // Establecer nivel de log para depuración de Firestore
+        setLogLevel('Debug');
+
+        const dbStatusElement = document.getElementById('login-status');
+        const loginButton = document.getElementById('login-button');
+
+        // Estado global de la aplicación
+        let auth = null;
+        let db = null;
+        let userId = null;
+        let authReady = false;
+        let currentChart = null;
+        let userProfileData = {};
+        let userProgressData = [];
+
+        // --- FUNCIONES DE UTILIDAD ---
+
+        // Función para calcular la diferencia de días entre dos fechas
+        function daysUntil(dateString) {
+            const today = new Date();
+            const expiry = new Date(dateString);
+            if (isNaN(expiry.getTime())) return { days: 0, status: 'No definido' };
+
+            const diffTime = expiry.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 30) return { days: 30, status: 'Activa' };
+            if (diffDays > 0) return { days: diffDays, status: 'Activa' };
+            if (diffDays > -7) return { days: diffDays, status: 'Vencida (Reciente)' };
+            return { days: 0, status: 'Vencida' };
+        }
+
+        // --- FIREBASE Y AUTENTICACIÓN ---
+
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    dbStatusElement.textContent = "Error: Configuración de Firebase no encontrada.";
                     return;
                 }
                 
-                // Simulación de Login: Oculta la pantalla de login y muestra la app principal
-                document.getElementById('screen-login').style.display = 'none';
-                document.getElementById('app-container').classList.remove('hidden');
-                this.state.isLoggedIn = true;
-                this.nav('screen-dashboard');
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Configurar persistencia de sesión
+                await setPersistence(auth, browserSessionPersistence);
+
+                // Listener para el estado de autenticación
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        authReady = true;
+                        dbStatusElement.textContent = `Bienvenido! ID: ${userId.substring(0, 8)}...`;
+                        
+                        // Una vez autenticado, inicializar la UI y los listeners
+                        await ensureInitialDataExists();
+                        startRealtimeListeners();
+                        loginButton.classList.remove('hidden');
+
+                    } else if (!authReady) {
+                        // Intentar iniciar sesión con token o de forma anónima
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al inicializar Firebase o autenticar:", error);
+                dbStatusElement.textContent = `Error de autenticación: ${error.message}`;
+            }
+        }
+
+        // --- LÓGICA DE DATOS INICIALES ---
+
+        // Función para asegurar que exista un documento de perfil si el usuario es nuevo
+        async function ensureInitialDataExists() {
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/gymData/profile`);
+            const docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                console.log("Creando datos iniciales para el nuevo usuario...");
+                const initialProfile = {
+                    name: 'Usuario Demo',
+                    initials: 'UD',
+                    email: 'demo@levelfit.com',
+                    phone: '555 123 4567',
+                    age: 28,
+                    initialWeight: 75.0,
+                    membershipExpiry: '2025-12-01', // YYYY-MM-DD
+                    createdAt: serverTimestamp()
+                };
+                await setDoc(docRef, initialProfile);
+
+                const progressColRef = collection(db, `artifacts/${appId}/users/${userId}/gymData/progress`);
+                await addDoc(progressColRef, { weight: 75.0, date: new Date('2025-11-01').toISOString(), timestamp: new Date('2025-11-01') });
+                await addDoc(progressColRef, { weight: 73.5, date: new Date('2025-12-01').toISOString(), timestamp: new Date('2025-12-01') });
+                
+                const routineDocRef = doc(db, `artifacts/${appId}/users/${userId}/gymData/routine`);
+                const initialRoutine = {
+                    day: "Lunes: Pecho y Tríceps",
+                    focus: "Hipertrofia",
+                    exercises: [
+                        { name: "Press de Banca Plano", sets: "4x10-12", notes: "Barra Olímpica" },
+                        { name: "Aperturas con Mancuernas", sets: "3x12-15", notes: "" },
+                        { name: "Extensión de Tríceps en Polea", sets: "4x15", notes: "Tip: Codos pegados" }
+                    ]
+                };
+                await setDoc(routineDocRef, initialRoutine);
+            }
+        }
+
+        // --- LISTENERS DE DATOS EN TIEMPO REAL ---
+
+        function startRealtimeListeners() {
+            if (!authReady || !userId) return;
+
+            // 1. Perfil y Membresía (Documento Único)
+            const profileRef = doc(db, `artifacts/${appId}/users/${userId}/gymData/profile`);
+            onSnapshot(profileRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    userProfileData = docSnap.data();
+                    app.updateUI();
+                } else {
+                    console.warn("Documento de perfil no encontrado.");
+                }
+            }, (error) => console.error("Error al escuchar perfil:", error));
+
+            // 2. Progreso de Peso (Colección)
+            const progressRef = collection(db, `artifacts/${appId}/users/${userId}/gymData/progress`);
+            // Nota: Se elimina orderBy para evitar errores de índice y se ordena en JS.
+            onSnapshot(query(progressRef), (snapshot) => {
+                userProgressData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Ordenar por fecha o timestamp para el gráfico
+                userProgressData.sort((a, b) => new Date(a.date || a.timestamp.toDate()) - new Date(b.date || b.timestamp.toDate()));
+                app.updateUI();
+            }, (error) => console.error("Error al escuchar progreso:", error));
+
+            // 3. Rutina (Documento Único)
+            const routineRef = doc(db, `artifacts/${appId}/users/${userId}/gymData/routine`);
+            onSnapshot(routineRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    app.renderRoutine(docSnap.data());
+                } else {
+                    document.getElementById('routine-content').innerHTML = '<div class="p-4 text-center text-red-500">Rutina no asignada. Contacta a tu entrenador.</div>';
+                }
+            }, (error) => console.error("Error al escuchar rutina:", error));
+        }
+
+        // --- LÓGICA DE APLICACIÓN ---
+
+        const app = {
+            
+            login: function() {
+                // Si la autenticación ya está lista, simplemente cambia la pantalla
+                if (authReady) {
+                    document.getElementById('screen-login').style.display = 'none';
+                    document.getElementById('app-container').classList.remove('hidden');
+                    this.nav('screen-dashboard');
+                } else {
+                    console.warn("Autenticación aún no está lista.");
+                    dbStatusElement.textContent = "Cargando. Espera un momento.";
+                }
             },
 
-            logout: function() {
-                // Simulación de Logout: Oculta la app y muestra la pantalla de login
+            logout: async function() {
+                if (auth) {
+                    await auth.signOut();
+                }
                 document.getElementById('app-container').classList.add('hidden');
                 document.getElementById('screen-login').style.display = 'flex';
-                document.getElementById('login-input').value = '';
-                this.state.isLoggedIn = false;
+                this.nav('screen-login');
+                dbStatusElement.textContent = "Sesión cerrada. Inicia sesión para continuar.";
+                loginButton.classList.remove('hidden');
             },
 
             nav: function(screenId) {
-                // Oculta todas las secciones de la aplicación
+                // Lógica de navegación de la UI
                 document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
-                
-                // Muestra la sección de destino
                 document.getElementById(screenId).classList.add('active');
                 
-                // Actualiza el estado visual de la barra de navegación
                 const navItems = document.querySelectorAll('.nav-item');
                 navItems.forEach(item => item.classList.remove('active'));
 
                 // Resalta el icono de navegación basado en la pantalla actual
-                if(screenId === 'screen-dashboard') navItems[0].classList.add('active');
-                if(screenId === 'screen-routine') navItems[1].classList.add('active');
-                if(screenId === 'screen-progress') navItems[2].classList.add('active');
-                if(screenId === 'screen-membership') navItems[3].classList.add('active');
+                if(screenId.includes('dashboard')) navItems[0].classList.add('active');
+                if(screenId.includes('routine')) navItems[1].classList.add('active');
+                if(screenId.includes('progress')) navItems[2].classList.add('active');
+                if(screenId.includes('membership')) navItems[3].classList.add('active');
+            },
 
-                // Si se navega a progreso, asegura que el gráfico se renderice correctamente
-                if(screenId === 'screen-progress') {
-                    // Se puede agregar lógica aquí si el gráfico necesitara redibujarse, aunque Chart.js lo maneja bien.
+            // --- RENDERIZADO DE DATOS (DOM) ---
+
+            updateUI: function() {
+                const data = userProfileData;
+
+                if (!data.name) return; // Evitar renderizado sin datos
+
+                // 1. Dashboard y Perfil
+                const name = data.name || 'Usuario';
+                const initials = data.initials || name.split(' ').map(n => n[0]).join('').toUpperCase();
+                const expiry = data.membershipExpiry || '2025-12-01';
+                const { days, status } = daysUntil(expiry);
+                const currentWeight = userProgressData.length > 0 ? userProgressData[userProgressData.length - 1].weight : data.initialWeight;
+                const initialWeight = data.initialWeight || 0;
+                
+                // Dashboard
+                document.getElementById('dashboard-user-name').textContent = name;
+                document.getElementById('membership-days').innerHTML = `${Math.max(0, days)} <span class="text-sm font-normal text-slate-500">días</span>`;
+                document.getElementById('membership-status').textContent = status;
+                document.getElementById('current-weight').innerHTML = `${currentWeight.toFixed(1)} <span class="text-sm font-normal text-slate-500">kg</span>`;
+                
+                let weightTrend = `--`;
+                if (userProgressData.length >= 2) {
+                    const diff = userProgressData[userProgressData.length - 1].weight - userProgressData[0].weight;
+                    const sign = diff > 0 ? '↑' : '↓';
+                    const color = diff > 0 ? 'text-red-600' : 'text-purple-600';
+                    weightTrend = `<span class="${color}">${sign} ${Math.abs(diff).toFixed(1)} kg total</span>`;
                 }
+                document.getElementById('weight-trend').innerHTML = weightTrend;
+
+                // Perfil
+                document.getElementById('user-id-display').textContent = userId;
+                document.getElementById('profile-name').textContent = name;
+                document.getElementById('profile-membership-status').textContent = status;
+                document.getElementById('profile-age').textContent = `${data.age} años`;
+                document.getElementById('profile-initial-weight').textContent = `${initialWeight} kg`;
+                document.getElementById('profile-phone').textContent = data.phone;
+                document.getElementById('profile-email').textContent = data.email;
+                document.getElementById('profile-initials').textContent = initials;
+                document.getElementById('profile-picture').textContent = initials;
+
+                // Membresía
+                document.getElementById('membership-plan').textContent = data.membershipPlan || 'Plan Mensual PRO';
+                document.getElementById('membership-access').textContent = data.membershipAccess || 'Acceso Total + Entrenador';
+                document.getElementById('membership-expiry').textContent = expiry;
+                const barColor = days > 7 ? 'bg-green-500' : (days > 0 ? 'bg-orange-500' : 'bg-red-500');
+                document.getElementById('membership-bar').className = `h-2 ${barColor} w-full absolute top-0`;
+
+                // 2. Gráfico de Progreso
+                this.renderCharts();
+            },
+
+            renderRoutine: function(routine) {
+                const container = document.getElementById('routine-content');
+                let html = `
+                    <div class="bg-blue-600 p-4 text-white">
+                        <h3 class="font-bold text-lg">${routine.day}</h3>
+                        <p class="text-xs opacity-80">Enfoque: ${routine.focus}</p>
+                    </div>
+                    <div class="p-4 space-y-4">
+                `;
+                
+                routine.exercises.forEach((ex, index) => {
+                    html += `
+                        <div class="flex items-start pb-4 border-b border-slate-100 last:border-0">
+                            <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0">${index + 1}</div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-slate-800">${ex.name}</h4>
+                                <p class="text-sm text-slate-500">${ex.sets}</p>
+                                ${ex.notes ? `<p class="text-xs text-orange-500 mt-1 font-medium">💡 ${ex.notes}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                container.innerHTML = html;
             },
 
             renderCharts: function() {
-                // Configuración y creación del gráfico de línea de peso usando Chart.js
+                // Si el gráfico existe, destrúyelo antes de recrearlo
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+
+                // Preparar datos para Chart.js
+                const labels = userProgressData.map(d => {
+                    const date = new Date(d.date || d.timestamp.toDate());
+                    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                });
+                const data = userProgressData.map(d => d.weight);
+
                 const ctx = document.getElementById('weightChart').getContext('2d');
-                new Chart(ctx, {
+                currentChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: ['1 Nov', '8 Nov', '15 Nov', '22 Nov', '1 Dic'],
+                        labels: labels,
                         datasets: [{
                             label: 'Peso (kg)',
-                            data: [75.0, 74.8, 74.2, 73.9, 73.5],
-                            borderColor: '#2563EB', // Azul
+                            data: data,
+                            borderColor: '#2563EB', // Blue-600
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             borderWidth: 3,
                             pointBackgroundColor: '#fff',
-                            pointBorderColor: '#F97316', // Naranja
+                            pointBorderColor: '#F97316', // Orange-500
                             pointBorderWidth: 2,
                             pointRadius: 4,
                             fill: true,
-                            tension: 0.4 // Curvas suaves
+                            tension: 0.4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }, // Oculta la leyenda
-                            tooltip: {
-                                backgroundColor: '#1E293B',
-                                padding: 10,
-                                cornerRadius: 8
-                            }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                grid: { color: '#F1F5F9' },
-                                ticks: { font: { family: 'Inter' } }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { font: { family: 'Inter' } }
-                            }
+                            y: { grid: { color: '#F1F5F9' } },
+                            x: { grid: { display: false } }
                         }
                     }
                 });
+            },
+
+            // --- FIREBASE WRITE FUNCTION ---
+
+            addProgressEntry: async function() {
+                if (!authReady || !userId || !db) {
+                    document.getElementById('progress-message').textContent = 'Error: La base de datos no está lista.';
+                    return;
+                }
+
+                const newWeightInput = document.getElementById('new-weight-input');
+                const newWeight = parseFloat(newWeightInput.value);
+
+                if (isNaN(newWeight) || newWeight <= 0) {
+                    document.getElementById('progress-message').textContent = 'Por favor, ingresa un peso válido.';
+                    newWeightInput.classList.add('border-red-500');
+                    setTimeout(() => newWeightInput.classList.remove('border-red-500'), 1500);
+                    return;
+                }
+                
+                document.getElementById('progress-message').textContent = 'Guardando...';
+
+                try {
+                    const progressColRef = collection(db, `artifacts/${appId}/users/${userId}/gymData/progress`);
+                    
+                    await addDoc(progressColRef, {
+                        weight: newWeight,
+                        // Usamos ISOString para asegurar que el dato de fecha sea consistente para la ordenación
+                        date: new Date().toISOString().split('T')[0],
+                        // Usamos serverTimestamp para una marca de tiempo inmutable para el futuro.
+                        timestamp: serverTimestamp() 
+                    });
+
+                    document.getElementById('progress-message').textContent = `Registro de ${newWeight} kg guardado con éxito.`;
+                    newWeightInput.value = '';
+
+                } catch (error) {
+                    console.error("Error al añadir registro de progreso:", error);
+                    document.getElementById('progress-message').textContent = `Error al guardar: ${error.message}`;
+                }
             }
         };
 
-        // Inicia la aplicación al cargar la página
-        app.init();
+        // Inicia la conexión a Firebase
+        initializeFirebase();
     </script>
 </body>
 </html>
